@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#faf7f1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="素材本" />
+<title>素材本 · 作文素材积累</title>
+<link id="appManifest" rel="manifest" />
+<style>
+/* ============ 基础变量：纸墨配色，实色 hex，不用渐变糊弄 ============ */
+:root{
+  --paper:#faf7f1;
+  --card:#ffffff;
+  --ink:#2b2622;
+  --ink2:#6f6559;
+  --ink3:#a89d8d;
+  --line:#e7ddce;
+  --line2:#f0e8db;
+  --accent:#c14b32;
+  --accent-soft:#f8ebe6;
+  --green:#3f6b63;
+  --radius:14px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+  --tabbar-h:58px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+/* hidden 属性必须压过各组件自己的 display（弹窗/清除键都靠它） */
+[hidden]{display:none !important;}
+html,body{margin:0;padding:0;}
+body{
+  background:#efe9dd;
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+input,textarea,button{font-family:inherit;font-size:inherit;color:inherit;}
+button{background:none;border:none;padding:0;cursor:pointer;}
+mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px;}
+
+/* ============ 应用容器（桌面下居中，手机满屏） ============ */
+#app{
+  position:relative;
+  max-width:640px;
+  margin:0 auto;
+  min-height:100vh;
+  background:var(--paper);
+  box-shadow:0 0 40px rgba(80,60,40,.08);
+  padding-top:var(--safe-t);
+}
+
+/* ============ 顶部栏 ============ */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:var(--paper);
+  padding:14px 16px 8px;
+  display:flex;align-items:flex-start;gap:10px;
+  border-bottom:1px solid transparent;
+  transition:border-color .2s;
+}
+.topbar.scrolled{border-bottom-color:var(--line);}
+.topbar h1{
+  margin:0;font-size:20px;font-weight:600;letter-spacing:.5px;
+  font-family:"Songti SC","Noto Serif CJK SC","STSong",serif;
+}
+.topbar .sub{margin:1px 0 0;font-size:12px;color:var(--ink3);}
+.topbar .grow{flex:1;min-width:0;}
+.icon-btn{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink2);flex-shrink:0;
+}
+.icon-btn:active{background:var(--line2);}
+.icon-btn svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ============ 搜索框 ============ */
+.search-wrap{
+  position:relative;margin:0 16px 10px;
+  display:flex;align-items:center;
+  background:var(--card);border:1px solid var(--line);
+  border-radius:11px;padding:0 10px;height:44px;
+}
+.search-wrap .ico{width:17px;height:17px;stroke:var(--ink3);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0;}
+.search-wrap input{
+  flex:1;border:none;outline:none;background:none;
+  padding:0 8px;height:100%;min-width:0;
+}
+.search-wrap input::placeholder{color:var(--ink3);}
+.search-wrap input::-webkit-search-cancel-button{display:none;}
+.clear-btn{
+  width:28px;height:28px;border-radius:50%;color:var(--ink3);
+  display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1;
+}
+
+/* ============ 横向 chip 行 ============ */
+.chip-row{
+  display:flex;gap:8px;overflow-x:auto;padding:2px 16px 10px;
+  scrollbar-width:none;
+}
+.chip-row::-webkit-scrollbar{display:none;}
+.chip{
+  flex-shrink:0;height:32px;padding:0 13px;border-radius:16px;
+  background:var(--card);border:1px solid var(--line);
+  color:var(--ink2);font-size:13px;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.chip:active{transform:scale(.97);}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff;}
+.chip .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* ============ 筛选条 ============ */
+.filter-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:0 16px 10px;
+}
+.filter-toggle{
+  display:inline-flex;align-items:center;gap:5px;
+  height:30px;padding:0 11px;border-radius:15px;
+  background:var(--card);border:1px solid var(--line);
+  font-size:12.5px;color:var(--ink2);
+}
+.filter-toggle.on{background:var(--accent-soft);border-color:#eccfc5;color:var(--accent);}
+.filter-toggle .badge{
+  min-width:16px;height:16px;padding:0 4px;border-radius:8px;
+  background:var(--accent);color:#fff;font-size:11px;line-height:16px;text-align:center;
+}
+.result-count{margin-left:auto;font-size:12px;color:var(--ink3);}
+
+/* ============ 标签筛选面板 ============ */
+.tag-panel{
+  margin:0 16px 10px;padding:10px 12px;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+}
+.tag-panel .hint{font-size:12px;color:var(--ink3);margin:0 0 8px;}
+.tag-panel .tags{display:flex;flex-wrap:wrap;gap:8px;}
+.tag-panel .empty-tags{font-size:12.5px;color:var(--ink3);}
+
+/* ============ 素材列表 ============ */
+.list{
+  padding:0 16px calc(var(--tabbar-h) + 90px + var(--safe-b));
+  display:flex;flex-direction:column;gap:11px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:13px 14px 12px;
+  transition:transform .12s ease,box-shadow .12s ease;
+}
+.card:active{transform:scale(.988);box-shadow:0 2px 10px rgba(80,60,40,.07);}
+.card-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.card-head .cat{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11.5px;color:var(--ink2);letter-spacing:.3px;
+}
+.card-head .cat i{
+  width:5px;height:5px;border-radius:50%;display:block;
+}
+.card-head .star{
+  margin-left:auto;width:34px;height:34px;margin-top:-8px;margin-right:-6px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink3);
+}
+.card-head .star.on{color:var(--accent);}
+.card-head .star svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;}
+.card-head .star.on svg{fill:currentColor;}
+.card h3{
+  margin:0 0 5px;font-size:15.5px;font-weight:600;line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.card .excerpt{
+  margin:0;font-size:13.5px;color:var(--ink2);line-height:1.65;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  word-break:break-word;
+}
+.card-foot{
+  display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap;
+}
+.mini-tag{
+  font-size:11.5px;color:var(--ink2);
+  background:var(--paper);border:1px solid var(--line2);
+  border-radius:9px;padding:1px 7px;
+}
+.card-foot .time{margin-left:auto;font-size:11.5px;color:var(--ink3);}
+
+/* ============ 空状态 ============ */
+.empty{
+  padding:56px 28px 40px;text-align:center;color:var(--ink3);
+}
+.empty .art{
+  width:96px;height:96px;margin:0 auto 16px;
+  color:#d9cdb9;
+}
+.empty h3{margin:0 0 6px;font-size:15px;color:var(--ink2);font-weight:600;}
+.empty p{margin:0;font-size:13px;line-height:1.7;}
+.empty .tip{margin-top:14px;font-size:12.5px;color:var(--ink3);}
+.empty button{
+  margin-top:16px;height:38px;padding:0 18px;border-radius:19px;
+  background:var(--ink);color:#fff;font-size:13.5px;
+}
+
+/* ============ 底部 Tab ============ */
+.tabbar{
+  position:fixed;bottom:0;left:0;right:0;z-index:30;
+  max-width:640px;margin:0 auto;
+  height:calc(var(--tabbar-h) + var(--safe-b));
+  padding-bottom:var(--safe-b);
+  display:flex;
+  background:rgba(250,247,241,.96);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);
+}
+.tabbar button{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;color:var(--ink3);font-size:11px;
+}
+.tabbar button.on{color:var(--accent);}
+.tabbar svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.tabbar button.on svg{stroke-width:2;}
+
+/* ============ 悬浮新增按钮 ============ */
+.fab{
+  position:fixed;z-index:31;
+  right:max(18px,calc((100vw - 640px)/2 + 18px));
+  bottom:calc(var(--tabbar-h) + 18px + var(--safe-b));
+  width:54px;height:54px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 18px rgba(193,75,50,.32);
+  transition:transform .15s;
+}
+.fab:active{transform:scale(.93);}
+.fab svg{width:26px;height:26px;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;}
+
+/* ============ 整屏滑入面板 ============ */
+.sheet{
+  position:fixed;top:0;bottom:0;left:0;right:0;z-index:50;
+  max-width:640px;margin:0 auto;
+  background:var(--paper);
+  display:flex;flex-direction:column;
+  transform:translateY(100%);
+  transition:transform .28s cubic-bezier(.22,.8,.24,1);
+  visibility:hidden;
+}
+.sheet.open{transform:translateY(0);visibility:visible;}
+.sheet-bar{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:4px;
+  padding:calc(8px + var(--safe-t)) 12px 8px;
+  border-bottom:1px solid var(--line);
+  background:var(--paper);
+}
+.sheet-bar .grow{flex:1;min-width:0;}
+.sheet-bar strong{
+  font-size:15px;font-weight:600;text-align:center;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.sheet-bar button{
+  height:44px;padding:0 11px;border-radius:10px;
+  font-size:14px;color:var(--ink2);
+  display:inline-flex;align-items:center;gap:4px;
+}
+.sheet-bar button:active{background:var(--line2);}
+.sheet-bar button.primary{color:var(--accent);font-weight:600;}
+.sheet-bar button.danger{color:#c0392b;}
+.sheet-bar button svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.sheet-bar button.icon-only{padding:0 8px;}
+.sheet-body{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:16px 16px calc(28px + var(--safe-b));
+}
+
+/* ============ 详情页 ============ */
+.detail-cat{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--ink2);
+  background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:3px 10px;margin-bottom:12px;
+}
+.detail-cat i{width:6px;height:6px;border-radius:50%;display:block;}
+.detail-title{
+  margin:0 0 14px;font-size:20px;font-weight:600;line-height:1.45;
+  font-family:"Songti SC","Noto Serif CJK SC","STSong",serif;
+  word-break:break-word;
+}
+.detail-content{
+  font-size:15.5px;line-height:1.95;color:#3a332c;
+  white-space:pre-wrap;word-break:break-word;
+  letter-spacing:.2px;
+}
+.detail-tags{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;}
+.detail-source{
+  display:inline-flex;align-items:center;gap:7px;margin-top:16px;
+  max-width:100%;padding:8px 12px;min-height:36px;
+  background:#eef4f1;border:1px solid #cfdcd6;border-radius:10px;
+  font-size:12.5px;color:var(--green);text-decoration:none;
+}
+.detail-source .lbl{color:#8aa39c;flex-shrink:0;}
+.detail-source .name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.detail-source .date{color:#8aa39c;flex-shrink:0;}
+.detail-source svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0;}
+.detail-meta{
+  margin-top:22px;padding-top:14px;border-top:1px dashed var(--line);
+  font-size:12px;color:var(--ink3);line-height:1.9;
+}
+.detail-meta span{display:block;}
+
+/* ============ 编辑表单 ============ */
+.field{margin-bottom:16px;}
+.field > label{
+  display:block;font-size:12.5px;color:var(--ink2);
+  margin-bottom:6px;font-weight:500;letter-spacing:.3px;
+}
+.field input[type=text],.field textarea{
+  width:100%;background:var(--card);
+  border:1px solid var(--line);border-radius:11px;
+  padding:11px 12px;outline:none;
+  transition:border-color .15s;
+}
+.field input[type=text]{height:44px;}
+.field textarea{line-height:1.8;resize:vertical;min-height:180px;}
+.field input:focus,.field textarea:focus{border-color:#cdbda5;}
+.field .counter{font-size:11.5px;color:var(--ink3);text-align:right;margin-top:4px;}
+
+.tag-edit{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px;}
+.tag-edit:empty{display:none;}
+.tag-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  height:30px;padding:0 10px 0 11px;border-radius:15px;
+  background:var(--accent-soft);color:var(--accent);
+  font-size:12.5px;border:1px solid #eccfc5;
+}
+.tag-pill button{color:#c98a78;font-size:15px;line-height:1;padding:0 0 0 1px;}
+.tag-suggest{margin-top:8px;display:flex;flex-wrap:wrap;gap:7px;}
+.tag-suggest .lbl{font-size:11.5px;color:var(--ink3);width:100%;margin-bottom:1px;}
+.tag-suggest button{
+  height:28px;padding:0 10px;border-radius:14px;
+  background:var(--paper);border:1px dashed var(--line);
+  font-size:12px;color:var(--ink2);
+}
+
+/* ============ AI 工具区 ============ */
+.ai-box{
+  margin-top:6px;padding:13px;
+  background:#fbf5ec;border:1px solid #eddfc9;border-radius:13px;
+}
+.ai-box .hdr{
+  display:flex;align-items:center;gap:6px;
+  font-size:12.5px;color:#8a6a3b;margin-bottom:10px;font-weight:500;
+}
+.ai-box .hdr svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.ai-actions{display:flex;flex-wrap:wrap;gap:8px;}
+.ai-actions button{
+  height:36px;padding:0 13px;border-radius:18px;
+  background:var(--card);border:1px solid #e6d5bb;
+  font-size:13px;color:#7a5a2b;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.ai-actions button:disabled{opacity:.5;}
+.ai-status{font-size:12px;color:#9a8358;margin-top:9px;line-height:1.6;}
+.ai-status:empty{display:none;}
+.ai-status.err{color:#c0392b;}
+
+/* ============ AI 找素材 ============ */
+.ai-go{
+  width:100%;height:46px;border-radius:12px;
+  background:var(--accent);color:#fff;
+  font-size:15px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  margin-top:4px;
+}
+.ai-go:disabled{opacity:.55;}
+.ai-go svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+.ai-card{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);padding:14px;
+  margin-top:12px;
+}
+.ai-card h3{margin:0 0 8px;font-size:15.5px;font-weight:600;line-height:1.5;}
+.ai-card .body{
+  font-size:14px;line-height:1.85;color:#3a332c;
+  white-space:pre-wrap;word-break:break-word;
+}
+.ai-card .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.ai-card .src{
+  display:inline-flex;align-items:center;gap:5px;margin-top:10px;
+  font-size:12px;color:var(--green);text-decoration:none;
+  background:#eef4f1;border:1px solid #cfdcd6;border-radius:9px;padding:4px 9px;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.ai-card .src svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0;}
+.ai-card .src.none{color:var(--ink3);background:var(--paper);border-color:var(--line);border-style:dashed;}
+.ai-card .save{
+  margin-top:12px;width:100%;height:40px;border-radius:10px;
+  background:var(--paper);border:1px solid var(--line);
+  font-size:13.5px;color:var(--ink2);
+}
+.ai-card .save.done{
+  background:#eef4f1;border-color:#cfdcd6;color:var(--green);
+}
+
+.ai-disclaim{
+  margin:20px 0 0;padding:12px 13px;
+  background:#fbf5ec;border:1px solid #eddfc9;border-radius:11px;
+  font-size:12px;line-height:1.8;color:#8a6a3b;
+}
+.ai-disclaim strong{color:#7a5a2b;}
+.ai-disclaim u{text-decoration-color:#d9a85c;text-underline-offset:2px;}
+
+/* ============ 确认弹窗 ============ */
+.modal-mask{
+  position:fixed;inset:0;z-index:80;
+  background:rgba(43,38,34,.42);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  animation:fade .18s ease;
+}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{
+  width:100%;max-width:320px;
+  background:var(--card);border-radius:16px;
+  padding:20px 20px 14px;
+  animation:pop .2s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes pop{from{transform:scale(.94);opacity:.4}to{transform:scale(1);opacity:1}}
+.modal h3{margin:0 0 7px;font-size:16px;font-weight:600;}
+.modal p{margin:0;font-size:13.5px;color:var(--ink2);line-height:1.65;word-break:break-word;}
+.modal-actions{display:flex;gap:9px;margin-top:18px;}
+.modal-actions button{
+  flex:1;height:44px;border-radius:11px;
+  font-size:14.5px;background:var(--paper);
+  border:1px solid var(--line);color:var(--ink2);
+}
+.modal-actions button.primary{background:var(--ink);border-color:var(--ink);color:#fff;}
+.modal-actions button.danger{background:#c0392b;border-color:#c0392b;color:#fff;}
+
+/* ============ Toast ============ */
+#toastHost{
+  position:fixed;z-index:90;left:0;right:0;
+  bottom:calc(var(--tabbar-h) + 82px + var(--safe-b));
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  pointer-events:none;padding:0 24px;
+}
+.toast{
+  max-width:380px;pointer-events:auto;
+  background:rgba(43,38,34,.94);color:#fff;
+  font-size:13.5px;line-height:1.5;
+  padding:10px 16px;border-radius:11px;
+  display:flex;align-items:center;gap:12px;
+  animation:toastIn .22s ease;
+  box-shadow:0 6px 20px rgba(0,0,0,.18);
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.toast.out{opacity:0;transform:translateY(6px);transition:all .2s;}
+.toast button{color:#f0c9a0;font-weight:600;flex-shrink:0;}
+
+/* ============ 设置页 ============ */
+.set-card{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:4px 14px;margin-bottom:14px;
+}
+.set-card h2{
+  margin:16px 0 10px;font-size:13px;font-weight:600;
+  color:var(--ink2);letter-spacing:.4px;
+}
+.set-row{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 0;border-top:1px solid var(--line2);
+  min-height:52px;
+}
+.set-row:first-of-type{border-top:none;}
+.set-row .info{flex:1;min-width:0;}
+.set-row .t{font-size:14.5px;}
+.set-row .d{font-size:12px;color:var(--ink3);margin-top:2px;line-height:1.5;}
+.set-row .act{color:var(--accent);font-size:13.5px;flex-shrink:0;}
+.set-row .act.danger{color:#c0392b;}
+/* 这些输入框都处在纵向排列的 .set-row 里，不能给 flex:1（那会去抢高度而不是宽度） */
+.set-row input{
+  width:100%;flex:none;height:38px;background:var(--paper);
+  border:1px solid var(--line);border-radius:9px;padding:0 10px;
+  font-size:13.5px;outline:none;
+}
+.set-row input:focus{border-color:#cdbda5;}
+.set-note{font-size:12px;color:var(--ink3);line-height:1.75;padding:0 0 14px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ========== 顶部栏 ========== -->
+  <header class="topbar" id="topbar">
+    <div class="grow">
+      <h1 id="pageTitle">素材本</h1>
+      <p class="sub" id="pageSub">共 0 条</p>
+    </div>
+    <button class="icon-btn" id="btnAIFind" title="AI 找素材" aria-label="AI 找素材">
+      <svg viewBox="0 0 24 24"><path d="M11 3l1.8 4.7L17.5 9.5 12.8 11.3 11 16l-1.8-4.7L4.5 9.5l4.7-1.8z"/><path d="M17.5 15l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9z"/></svg>
+    </button>
+    <button class="icon-btn" id="btnRandom" title="随机推荐一条" aria-label="随机推荐一条">
+      <svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M21 3l-7 7"/><path d="M8 21H3v-5"/><path d="M3 21l7-7"/><path d="M21 16v5h-5"/><path d="M14 14l7 7"/><path d="M3 8V3h5"/><path d="M10 10L3 3"/></svg>
+    </button>
+  </header>
+
+  <!-- ========== 素材库 / 收藏 ========== -->
+  <main>
+    <div class="search-wrap">
+      <svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="searchInput" type="text" inputmode="search" enterkeyhint="search"
+             placeholder="搜标题或正文…" autocomplete="off" />
+      <button class="clear-btn" id="btnClearSearch" hidden aria-label="清空">×</button>
+    </div>
+
+    <div class="chip-row" id="catRow"></div>
+
+    <div class="filter-bar">
+      <button class="filter-toggle" id="btnTagPanel">
+        标签筛选<span class="badge" id="tagBadge" hidden>0</span>
+      </button>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+
+    <div class="tag-panel" id="tagPanel" hidden>
+      <p class="hint">选中多个标签 = 只显示同时包含它们的素材</p>
+      <div class="tags" id="tagPool"></div>
+    </div>
+
+    <div class="list" id="list"></div>
+    <div id="emptyHost"></div>
+  </main>
+
+  <!-- ========== 底部导航 ========== -->
+  <nav class="tabbar" id="tabbar">
+    <button data-tab="library" class="on">
+      <svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 016.5 3H19v18H6.5A2.5 2.5 0 014 18.5z"/><path d="M8 3v18"/></svg>
+      <span>素材库</span>
+    </button>
+    <button data-tab="favorites">
+      <svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z"/></svg>
+      <span>收藏</span>
+    </button>
+    <button data-tab="settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.7 1.7 0 007.5 19.4a1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H1.4a2 2 0 110-4h.1A1.7 1.7 0 003.1 8.5a1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H8a1.7 1.7 0 001-1.5V2.6a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9v.1a1.7 1.7 0 001.5 1h.1a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>
+      <span>设置</span>
+    </button>
+  </nav>
+
+  <button class="fab" id="btnAdd" aria-label="新增素材">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+  </button>
+
+  <!-- ========== 设置页（独立视图，不用 sheet） ========== -->
+  <div class="sheet" id="settingsSheet">
+    <header class="sheet-bar">
+      <span class="grow"></span>
+      <strong>设置</strong>
+      <span class="grow"></span>
+      <button class="icon-only" data-act="close-settings" aria-label="关闭">
+        <svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <div class="sheet-body">
+      <div class="set-card">
+        <h2>云 AI（可选）</h2>
+        <div class="set-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+          <div class="t">接口地址</div>
+          <input id="setBase" type="text" placeholder="https://api.deepseek.com/v1" />
+        </div>
+        <div class="set-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+          <div class="t">API Key</div>
+          <input id="setKey" type="text" placeholder="sk-…" autocomplete="off" />
+        </div>
+        <div class="set-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+          <div class="t">模型名</div>
+          <input id="setModel" type="text" placeholder="deepseek-flash" />
+        </div>
+        <div class="set-row">
+          <div class="info"><div class="t">连接测试</div><div class="d">发一条最短请求，确认 Key 和地址可用</div></div>
+          <button class="act" id="btnTestAI">测试</button>
+        </div>
+        <p class="set-note">
+          默认接 DeepSeek。模型名填 <b>deepseek-flash</b>——它就是 V4.1-Flash，
+          写成 deepseek-v4.1-flash 接口会直接报错。<br />
+          换别家也行：月之暗面 https://api.moonshot.cn/v1、OpenAI https://api.openai.com/v1。<br />
+          Key 只存在这台设备的浏览器里，不上传到任何服务器。这个页面本身不含任何 Key，别人打开你的链接也是空的。
+        </p>
+        <p class="set-note" style="border-top:1px solid var(--line2);padding-top:12px;">
+          <b>关于搜索</b>：「AI 找素材」会调用 DeepSeek 的联网搜索接口，按次收费，
+          每 1000 次 5 元（搜到结果才算一次，大约每次半分钱）。
+          <b>每点一次「去网上找素材」= 1 次搜索 + 1 次模型整理。</b>
+        </p>
+      </div>
+
+      <div class="set-card">
+        <h2>数据</h2>
+        <div class="set-row">
+          <div class="info"><div class="t">导出全部素材</div><div class="d">存成 JSON 文件，可备份或换机迁移</div></div>
+          <button class="act" id="btnExport">导出</button>
+        </div>
+        <div class="set-row">
+          <div class="info"><div class="t">导入 JSON</div><div class="d">按 id 合并：同 id 覆盖，新 id 追加</div></div>
+          <button class="act" id="btnImport">选择文件</button>
+        </div>
+        <div class="set-row">
+          <div class="info"><div class="t">清空所有数据</div><div class="d">不可恢复，请先导出一份</div></div>
+          <button class="act danger" id="btnWipe">清空</button>
+        </div>
+      </div>
+
+      <div class="set-card">
+        <h2>安装</h2>
+        <div class="set-row">
+          <div class="info">
+            <div class="t">装到手机主屏</div>
+            <div class="d" id="installHint">像 App 一样全屏打开，数据仍在本机</div>
+          </div>
+          <button class="act" id="btnInstall">安装</button>
+        </div>
+        <p class="set-note" id="installNote">
+          iPhone：Safari 打开 → 分享 → 添加到主屏幕。<br />
+          Android：Chrome 菜单 → 安装应用 / 添加到主屏幕。
+        </p>
+      </div>
+
+      <p class="set-note" style="text-align:center;padding-top:6px;color:#b8ad9c;">
+        素材本 · 本地存储，刷新不丢
+      </p>
+    </div>
+  </div>
+
+  <!-- ========== AI 找素材 ========== -->
+  <div class="sheet" id="aiSheet">
+    <header class="sheet-bar">
+      <button data-act="close-ai">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>返回
+      </button>
+      <span class="grow" style="text-align:center"><strong>AI 找素材</strong></span>
+    </header>
+    <div class="sheet-body">
+      <div class="field">
+        <label for="aiPrompt">你要什么素材</label>
+        <textarea id="aiPrompt" rows="3"
+          placeholder="说具体一点，比如：&#10;· 关于「坚持」的人物事例，最好是科学家&#10;· 写故乡的开头，要有画面感&#10;· 最近的科技新闻，能用在议论文里"></textarea>
+      </div>
+
+      <div class="field">
+        <label>存进哪个分类</label>
+        <div class="chip-row" id="aiCat" style="padding:0"></div>
+      </div>
+
+      <button class="ai-go" id="btnAIGo">
+        <svg viewBox="0 0 24 24"><path d="M11 3l1.8 4.7L17.5 9.5 12.8 11.3 11 16l-1.8-4.7L4.5 9.5l4.7-1.8z"/></svg>
+        去网上找素材
+      </button>
+      <p class="ai-status" id="aiFindStatus"></p>
+
+      <div id="aiResults"></div>
+
+      <p class="ai-disclaim">
+        <strong>它会真的上网去搜。</strong>先拿你写的提示词搜真实网页，再据搜到的内容提炼素材，
+        每条都带来源链接，点开能核对原文。<br />
+        万一没搜到相关网页，才退回模型记忆去写——那种素材会标「无来源可查」，用之前务必自己核实。
+      </p>
+    </div>
+  </div>
+
+  <!-- ========== 详情页 ========== -->
+  <div class="sheet" id="detailSheet">
+    <header class="sheet-bar">
+      <button data-act="close-detail">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>返回
+      </button>
+      <span class="grow"></span>
+      <button class="icon-only" data-act="fav-detail" id="btnDetailFav" aria-label="收藏">
+        <svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z"/></svg>
+      </button>
+      <button class="icon-only" data-act="edit-detail" aria-label="编辑">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
+      </button>
+      <button class="icon-only danger" data-act="delete-detail" aria-label="删除">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+      </button>
+    </header>
+    <div class="sheet-body" id="detailBody"></div>
+  </div>
+
+  <!-- ========== 编辑页 ========== -->
+  <div class="sheet" id="editorSheet">
+    <header class="sheet-bar">
+      <button data-act="cancel-edit">取消</button>
+      <span class="grow"></span>
+      <strong id="editorTitle">新增素材</strong>
+      <span class="grow"></span>
+      <button class="primary" data-act="save-edit">保存</button>
+    </header>
+    <div class="sheet-body">
+      <div class="field">
+        <label for="fTitle">标题 / 摘要</label>
+        <input id="fTitle" type="text" placeholder="一句话概括这条素材" maxlength="120" />
+        <div class="counter"><span id="titleCount">0</span>/120</div>
+      </div>
+
+      <div class="field">
+        <label for="fContent">正文</label>
+        <textarea id="fContent" placeholder="摘抄原文，或写下你自己的理解…"></textarea>
+        <div class="counter"><span id="contentCount">0</span> 字</div>
+      </div>
+
+      <div class="field">
+        <label>分类</label>
+        <div class="chip-row" id="fCategory" style="padding:0;"></div>
+      </div>
+
+      <div class="field">
+        <label>标签</label>
+        <div class="tag-edit" id="fTags"></div>
+        <input id="fTagInput" type="text" placeholder="输入标签，回车或逗号添加"
+               style="width:100%;height:40px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0 11px;outline:none;font-size:13.5px;" />
+        <div class="tag-suggest" id="fTagSuggest"></div>
+      </div>
+
+      <div class="ai-box">
+        <div class="hdr">
+          <svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 16l.9 2.1L21 19l-2.1.9L18 22l-.9-2.1L15 19l2.1-.9z"/></svg>
+          云 AI 助手
+        </div>
+        <div class="ai-actions">
+          <button id="aiPolish">润色扩写</button>
+          <button id="aiTags">建议标签</button>
+          <button id="aiDraft">按标题写一条</button>
+        </div>
+        <p class="ai-status" id="aiStatus"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 确认弹窗 ========== -->
+  <div class="modal-mask" id="confirmMask" hidden>
+    <div class="modal">
+      <h3 id="confirmTitle">确认？</h3>
+      <p id="confirmDesc"></p>
+      <div class="modal-actions">
+        <button data-act="confirm-cancel">取消</button>
+        <button data-act="confirm-ok" class="danger" id="confirmOk">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastHost"></div>
+  <input type="file" id="importFile" accept="application/json,.json" hidden />
+</div>
+
+<script>
+/* =========================================================================
+   素材本 · 单文件应用
+   结构：常量 → 数据层 → 工具 → 渲染 → 交互 → AI → 初始化
+   ========================================================================= */
+
+/* ---------------------------- 1. 常量 ----------------------------------- */
+
+const STORE_KEY = 'essay-materials-v1';
+
+// 内置分类。要加就改这里，其他地方自动跟随。
+const CATEGORIES = ['名言金句', '人物事例', '开头结尾', '好词好句', '诗词典故', '时事热点'];
+
+// 每个分类一个实色点，纯装饰，帮列表快速区分
+const CAT_COLOR = {
+  '名言金句': '#c14b32',
+  '人物事例': '#3f6b63',
+  '开头结尾': '#8a6a3b',
+  '好词好句': '#4a6c8c',
+  '诗词典故': '#6b5947',
+  '时事热点': '#a35b1f'
+};
+const DEFAULT_CAT = CATEGORIES[0];
+
+// DeepSeek V4.1-Flash 是推理模型，会先想一大段再回答，45 秒不够用
+const AI_TIMEOUT = 90000;
+
+/* ---------------------------- 2. 数据层 --------------------------------- */
+
+function emptyDB() {
+  return {
+    version: 1,
+    materials: [],
+    settings: {
+      ai: { baseUrl: 'https://api.deepseek.com/v1', apiKey: '', model: 'deepseek-flash' }
+    }
+  };
+}
+
+// 把任意外来数据规矩成标准素材对象；字段缺失或类型不对都不会让应用崩掉
+function normalizeMaterial(m) {
+  const now = Date.now();
+  // 来源是可选的：手写素材没有，联网搜来的有
+  let source = null;
+  if (m?.source && typeof m.source === 'object' && m.source.url) {
+    source = {
+      url: String(m.source.url).slice(0, 2048),
+      title: String(m.source.title || '').slice(0, 200),
+      siteName: String(m.source.siteName || '').slice(0, 60),
+      date: String(m.source.date || '').slice(0, 40)
+    };
+  }
+  return {
+    id: String(m && m.id ? m.id : uid()),
+    title: typeof m?.title === 'string' ? m.title : '',
+    content: typeof m?.content === 'string' ? m.content : '',
+    category: CATEGORIES.includes(m?.category) ? m.category : DEFAULT_CAT,
+    tags: Array.isArray(m?.tags) ? m.tags.filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()) : [],
+    favorite: !!m?.favorite,
+    source,
+    createdAt: Number(m?.createdAt) || now,
+    updatedAt: Number(m?.updatedAt) || Number(m?.createdAt) || now
+  };
+}
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return emptyDB();
+    const parsed = JSON.parse(raw);
+    const base = emptyDB();
+    return {
+      version: base.version,
+      materials: Array.isArray(parsed?.materials) ? parsed.materials.map(normalizeMaterial) : [],
+      settings: { ai: Object.assign({}, base.settings.ai, parsed?.settings?.ai || {}) }
+    };
+  } catch (err) {
+    console.error('[素材本] 读取本地数据失败：', err);
+    return emptyDB();
+  }
+}
+
+function saveDB() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(db));
+    return true;
+  } catch (err) {
+    console.error('[素材本] 写入失败：', err);
+    toast('保存失败，浏览器本地存储可能已满');
+    return false;
+  }
+}
+
+let db = loadDB();
+
+/* ---------------------------- 3. 运行时状态 ------------------------------ */
+// 状态不落盘：刷新后回到干净的浏览位置，不会有"上次筛选还卡着"的困惑
+const state = {
+  tab: 'library',        // library | favorites | settings
+  keyword: '',
+  category: '全部',
+  tags: [],              // 已选中的筛选标签
+  tagPanelOpen: false,
+  viewingId: null,       // 详情页正在看的素材
+  editingId: null,       // null 表示新增
+  editingTags: [],       // 编辑中未保存的标签
+  editingCategory: DEFAULT_CAT,
+  undoSnapshot: null,    // AI 改写前的正文，用于撤销
+  aiCategory: DEFAULT_CAT, // AI 找素材：存进哪个分类
+  aiResults: []          // AI 找素材：当前这一批生成的候选，还没入库
+};
+
+/* ---------------------------- 4. 工具函数 -------------------------------- */
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function fmtTime(ts) {
+  const d = new Date(ts);
+  const p = n => String(n).padStart(2, '0');
+  const now = new Date();
+  const y = d.getFullYear() === now.getFullYear() ? '' : d.getFullYear() + '年';
+  return y + p(d.getMonth() + 1) + '月' + p(d.getDate()) + '日 ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return Array.from(document.querySelectorAll(sel)); }
+
+// 转义后再高亮：先 escape 保证不会注入，再在安全文本上替换关键词
+function highlight(escapedText, keyword) {
+  if (!keyword) return escapedText;
+  const k = escapeHtml(keyword);
+  const re = new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  return escapedText.replace(re, m => '<mark>' + m + '</mark>');
+}
+
+// 摘要：命中关键词时从命中处附近截，让用户看见为什么这条被搜出来
+function makeExcerpt(content, keyword, len) {
+  const text = String(content || '').replace(/\s+/g, ' ').trim();
+  len = len || 88;
+  if (!keyword) return text.slice(0, len);
+  const i = text.toLowerCase().indexOf(keyword.toLowerCase());
+  if (i < 0) return text.slice(0, len);
+  const start = Math.max(0, i - 18);
+  return (start > 0 ? '…' : '') + text.slice(start, start + len);
+}
+
+function toast(msg, actionLabel, actionFn) {
+  const host = $('#toastHost');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = '<span>' + escapeHtml(msg) + '</span>';
+  if (actionLabel && actionFn) {
+    const btn = document.createElement('button');
+    btn.textContent = actionLabel;
+    btn.onclick = () => { actionFn(); dismiss(); };
+    el.appendChild(btn);
+  }
+  host.appendChild(el);
+  let timer = setTimeout(dismiss, actionLabel ? 5200 : 2200);
+  function dismiss() {
+    clearTimeout(timer);
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 220);
+  }
+  return dismiss;
+}
+
+// 自绘确认框，返回 Promise<boolean>
+function confirmDialog(title, desc, okText, danger) {
+  return new Promise(resolve => {
+    const mask = $('#confirmMask');
+    $('#confirmTitle').textContent = title;
+    $('#confirmDesc').textContent = desc || '';
+    const ok = $('#confirmOk');
+    ok.textContent = okText || '确定';
+    ok.className = danger ? 'danger' : 'primary';
+    mask.hidden = false;
+    syncBodyLock();
+
+    function finish(val) {
+      mask.hidden = true;
+      ok.onclick = null;
+      mask.querySelector('[data-act="confirm-cancel"]').onclick = null;
+      syncBodyLock();
+      resolve(val);
+    }
+    ok.onclick = () => finish(true);
+    mask.querySelector('[data-act="confirm-cancel"]').onclick = () => finish(false);
+  });
+}
+
+function syncBodyLock() {
+  const open = $$('.sheet.open').length > 0 || !$('#confirmMask').hidden;
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+
+/* ---------------------------- 5. 查询与筛选 ------------------------------ */
+
+function allTags() {
+  const set = new Set();
+  db.materials.forEach(m => m.tags.forEach(t => set.add(t)));
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'zh'));
+}
+
+function getFiltered() {
+  const kw = state.keyword.trim().toLowerCase();
+  return db.materials
+    .filter(m => {
+      if (state.tab === 'favorites' && !m.favorite) return false;
+      if (state.category !== '全部' && m.category !== state.category) return false;
+      // 多标签取交集：必须同时含有选中的每一个
+      if (state.tags.length && !state.tags.every(t => m.tags.includes(t))) return false;
+      if (kw) {
+        const hay = (m.title + '\n' + m.content).toLowerCase();
+        if (!hay.includes(kw)) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+/* ---------------------------- 6. 渲染：列表 ------------------------------ */
+
+function renderTopbar() {
+  const total = db.materials.length;
+  const fav = db.materials.filter(m => m.favorite).length;
+  const titles = { library: '素材本', favorites: '我的收藏', settings: '设置' };
+  $('#pageTitle').textContent = titles[state.tab];
+  $('#pageSub').textContent = state.tab === 'favorites'
+    ? '已收藏 ' + fav + ' 条 / 共 ' + total + ' 条'
+    : '共 ' + total + ' 条 · 收藏 ' + fav + ' 条';
+
+  const showTools = state.tab !== 'settings';
+  $('#btnAIFind').style.display = showTools ? '' : 'none';
+  $('#btnRandom').style.display = showTools ? '' : 'none';
+  $('#btnAdd').style.display = showTools ? '' : 'none';
+  $('.search-wrap').style.display = showTools ? '' : 'none';
+  $('#catRow').style.display = showTools ? '' : 'none';
+  $('.filter-bar').style.display = showTools ? '' : 'none';
+  $('#tagPanel').style.display = (showTools && state.tagPanelOpen) ? '' : 'none';
+  $('#tagPanel').hidden = !(showTools && state.tagPanelOpen);
+  $('#list').style.display = showTools ? '' : 'none';
+}
+
+function renderCatRow() {
+  const row = $('#catRow');
+  const items = ['全部'].concat(CATEGORIES);
+  row.innerHTML = items.map(c => {
+    const on = state.category === c;
+    const count = c === '全部'
+      ? db.materials.length
+      : db.materials.filter(m => m.category === c).length;
+    const dot = c === '全部' ? '' : '<i class="dot" style="background:' + (CAT_COLOR[c] || '#999') + '"></i>';
+    return '<button class="chip' + (on ? ' on' : '') + '" data-cat="' + escapeHtml(c) + '">'
+      + dot + escapeHtml(c) + '<span style="opacity:.55">' + count + '</span></button>';
+  }).join('');
+}
+
+function renderFilterBar() {
+  const badge = $('#tagBadge');
+  if (state.tags.length) {
+    badge.hidden = false;
+    badge.textContent = state.tags.length;
+  } else {
+    badge.hidden = true;
+  }
+  $('#btnTagPanel').classList.toggle('on', state.tagPanelOpen || state.tags.length > 0);
+
+  const list = getFiltered();
+  $('#resultCount').textContent = (state.keyword || state.category !== '全部' || state.tags.length)
+    ? '筛出 ' + list.length + ' 条'
+    : '';
+}
+
+function renderTagPanel() {
+  const pool = $('#tagPool');
+  const tags = allTags();
+  if (!tags.length) {
+    pool.innerHTML = '<span class="empty-tags">还没有标签。新增素材时可以随手加几个。</span>';
+    return;
+  }
+  pool.innerHTML = tags.map(t => {
+    const on = state.tags.includes(t);
+    return '<button class="chip' + (on ? ' on' : '') + '" data-tag="' + escapeHtml(t) + '">'
+      + escapeHtml(t) + '</button>';
+  }).join('');
+}
+
+function renderList() {
+  const list = $('#list');
+  const host = $('#emptyHost');
+  const items = getFiltered();
+  const kw = state.keyword.trim();
+
+  if (!items.length) {
+    list.innerHTML = '';
+    host.innerHTML = buildEmptyState();
+    bindEmptyState();
+    return;
+  }
+  host.innerHTML = '';
+
+  list.innerHTML = items.map(m => {
+    const title = highlight(escapeHtml(m.title || '（无标题）'), kw);
+    const excerpt = highlight(escapeHtml(makeExcerpt(m.content, kw)), kw);
+    const catColor = CAT_COLOR[m.category] || '#999';
+    const tags = m.tags.slice(0, 3).map(t => '<span class="mini-tag">' + escapeHtml(t) + '</span>').join('');
+    const more = m.tags.length > 3 ? '<span class="mini-tag">+' + (m.tags.length - 3) + '</span>' : '';
+    return ''
+      + '<article class="card" data-open="' + m.id + '">'
+      +   '<div class="card-head">'
+      +     '<span class="cat"><i style="background:' + catColor + '"></i>' + escapeHtml(m.category) + '</span>'
+      +     '<button class="star' + (m.favorite ? ' on' : '') + '" data-fav="' + m.id + '" aria-label="收藏">'
+      +       '<svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z"/></svg>'
+      +     '</button>'
+      +   '</div>'
+      +   '<h3>' + title + '</h3>'
+      +   (m.content ? '<p class="excerpt">' + excerpt + '</p>' : '')
+      +   '<div class="card-foot">' + tags + more + '<span class="time">' + fmtTime(m.updatedAt) + '</span></div>'
+      + '</article>';
+  }).join('');
+}
+
+function buildEmptyState() {
+  const art = '<svg class="art" viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<rect x="20" y="14" width="56" height="68" rx="5"/>'
+    + '<path d="M32 30h32M32 42h32M32 54h20"/>'
+    + '<path d="M66 66l10-10 6 6-10 10-7 1z"/>'
+    + '</svg>';
+
+  // 库里一条都没有
+  if (!db.materials.length) {
+    return '<div class="empty">' + art
+      + '<h3>本子还是空的</h3>'
+      + '<p>点右下角的 +，把今天读到的那句好话记下来。<br>哪怕只有一句，也比存个书签管用。</p>'
+      + '<button data-empty-act="add">记第一条</button>'
+      + '</div>';
+  }
+  // 收藏页空
+  if (state.tab === 'favorites' && !state.keyword && state.category === '全部' && !state.tags.length) {
+    return '<div class="empty">' + art
+      + '<h3>收藏夹空着</h3>'
+      + '<p>看到值得反复看的素材，点卡片右上角的星星。<br>它们会集中出现在这里。</p>'
+      + '</div>';
+  }
+  // 有筛选条件但没结果
+  const conds = [];
+  if (state.keyword) conds.push('关键词「' + escapeHtml(state.keyword.trim()) + '」');
+  if (state.category !== '全部') conds.push('分类「' + escapeHtml(state.category) + '」');
+  if (state.tags.length) conds.push('标签「' + state.tags.map(escapeHtml).join('、') + '」');
+  return '<div class="empty">' + art
+    + '<h3>没有找到符合条件的素材</h3>'
+    + '<p>' + (conds.length ? '当前条件：' + conds.join(' + ') : '当前筛选条件') + '</p>'
+    + '<p class="tip">试试少选一个标签、换个分类，或者清空搜索词。</p>'
+    + '<button data-empty-act="reset">清空筛选条件</button>'
+    + '</div>';
+}
+
+function bindEmptyState() {
+  const host = $('#emptyHost');
+  const addBtn = host.querySelector('[data-empty-act="add"]');
+  if (addBtn) addBtn.onclick = () => openEditor(null);
+  const resetBtn = host.querySelector('[data-empty-act="reset"]');
+  if (resetBtn) resetBtn.onclick = () => {
+    state.keyword = '';
+    state.category = '全部';
+    state.tags = [];
+    $('#searchInput').value = '';
+    $('#btnClearSearch').hidden = true;
+    renderAll();
+  };
+}
+
+// 统一重绘入口：改完数据、改完筛选，调这一个就不会漏
+function renderAll() {
+  renderTopbar();
+  renderCatRow();
+  renderFilterBar();
+  renderTagPanel();
+  renderList();
+  syncTabbar();
+}
+
+function syncTabbar() {
+  $$('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === state.tab));
+}
+
+/* ---------------------------- 7. 详情页 ---------------------------------- */
+
+function openDetail(id) {
+  const m = db.materials.find(x => x.id === id);
+  if (!m) return;
+  state.viewingId = id;
+
+  const body = $('#detailBody');
+  const catColor = CAT_COLOR[m.category] || '#999';
+  body.innerHTML = ''
+    + '<span class="detail-cat"><i style="background:' + catColor + '"></i>' + escapeHtml(m.category) + '</span>'
+    + '<h2 class="detail-title">' + escapeHtml(m.title || '（无标题）') + '</h2>'
+    + '<div class="detail-content">' + escapeHtml(m.content) + '</div>'
+    + (m.tags.length
+        ? '<div class="detail-tags">' + m.tags.map(t => '<span class="mini-tag">' + escapeHtml(t) + '</span>').join('') + '</div>'
+        : '')
+    + (m.source
+        ? '<a class="detail-source" href="' + escapeHtml(m.source.url) + '" target="_blank" rel="noopener noreferrer">'
+          + '<span class="lbl">来源</span>'
+          + '<span class="name">' + escapeHtml(m.source.siteName || domainOf(m.source.url)) + '</span>'
+          + (m.source.date ? '<span class="date">' + escapeHtml(String(m.source.date).slice(0, 10)) + '</span>' : '')
+          + '<svg viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M19 14v5a1 1 0 01-1 1H6a1 1 0 01-1-1V6a1 1 0 011-1h5"/></svg>'
+          + '</a>'
+        : '')
+    + '<div class="detail-meta">'
+    +   '<span>创建：' + fmtTime(m.createdAt) + '</span>'
+    +   '<span>更新：' + fmtTime(m.updatedAt) + '</span>'
+    +   '<span>' + (m.favorite ? '已收藏' : '未收藏') + '</span>'
+    + '</div>';
+
+  // 收藏按钮状态跟随
+  $('#btnDetailFav').style.color = m.favorite ? 'var(--accent)' : '';
+  $('#btnDetailFav').querySelector('svg').style.fill = m.favorite ? 'currentColor' : 'none';
+
+  const sheet = $('#detailSheet');
+  sheet.classList.add('open');
+  sheet.querySelector('.sheet-body').scrollTop = 0;
+  syncBodyLock();
+}
+
+function closeDetail() {
+  $('#detailSheet').classList.remove('open');
+  state.viewingId = null;
+  syncBodyLock();
+}
+
+function toggleFavorite(id) {
+  const m = db.materials.find(x => x.id === id);
+  if (!m) return;
+  m.favorite = !m.favorite;
+  m.updatedAt = Date.now();
+  saveDB();
+  renderAll();
+  if (state.viewingId === id) openDetail(id);
+  toast(m.favorite ? '已加入收藏' : '已取消收藏');
+}
+
+/* ---------------------------- 8. 编辑页 ---------------------------------- */
+
+function openEditor(id) {
+  const isEdit = !!id;
+  state.editingId = isEdit ? id : null;
+  const m = isEdit ? db.materials.find(x => x.id === id) : null;
+
+  $('#editorTitle').textContent = isEdit ? '编辑素材' : '新增素材';
+  $('#fTitle').value = m ? m.title : '';
+  $('#fContent').value = m ? m.content : '';
+  state.editingCategory = m ? m.category : (state.category !== '全部' ? state.category : DEFAULT_CAT);
+  state.editingTags = m ? m.tags.slice() : [];
+  state.undoSnapshot = null;
+  $('#fTagInput').value = '';
+  setAIStatus('');
+
+  renderEditorCats();
+  renderEditorTags();
+  renderTagSuggest();
+  updateCounters();
+
+  const sheet = $('#editorSheet');
+  sheet.classList.add('open');
+  sheet.querySelector('.sheet-body').scrollTop = 0;
+  syncBodyLock();
+}
+
+function closeEditor() {
+  $('#editorSheet').classList.remove('open');
+  state.editingId = null;
+  state.editingTags = [];
+  state.undoSnapshot = null;
+  syncBodyLock();
+}
+
+function renderEditorCats() {
+  $('#fCategory').innerHTML = CATEGORIES.map(c => {
+    const on = state.editingCategory === c;
+    const dot = '<i class="dot" style="background:' + (CAT_COLOR[c] || '#999') + '"></i>';
+    return '<button class="chip' + (on ? ' on' : '') + '" data-ecat="' + escapeHtml(c) + '">' + dot + escapeHtml(c) + '</button>';
+  }).join('');
+}
+
+function renderEditorTags() {
+  $('#fTags').innerHTML = state.editingTags.map((t, i) =>
+    '<span class="tag-pill">' + escapeHtml(t)
+    + '<button data-deltag="' + i + '" aria-label="移除标签">×</button></span>'
+  ).join('');
+}
+
+function renderTagSuggest() {
+  const used = allTags().filter(t => !state.editingTags.includes(t)).slice(0, 12);
+  $('#fTagSuggest').innerHTML = used.length
+    ? '<span class="lbl">用过的标签</span>' + used.map(t =>
+        '<button data-addtag="' + escapeHtml(t) + '">＋' + escapeHtml(t) + '</button>').join('')
+    : '';
+}
+
+function addEditingTag(raw) {
+  const t = String(raw || '').trim().replace(/^[#＃]/, '').trim();
+  if (!t) return;
+  if (t.length > 12) { toast('标签太长了，控制在 12 字内'); return; }
+  if (state.editingTags.includes(t)) { toast('这个标签已经有了'); return; }
+  if (state.editingTags.length >= 8) { toast('一条素材最多 8 个标签'); return; }
+  state.editingTags.push(t);
+  renderEditorTags();
+  renderTagSuggest();
+}
+
+function updateCounters() {
+  $('#titleCount').textContent = $('#fTitle').value.length;
+  $('#contentCount').textContent = $('#fContent').value.length;
+}
+
+function saveEditor() {
+  const title = $('#fTitle').value.trim();
+  const content = $('#fContent').value.trim();
+
+  // 正文必须有；标题可以根据正文自动补一个
+  if (!content) {
+    toast('正文不能空着');
+    $('#fContent').focus();
+    return;
+  }
+  const finalTitle = title || content.replace(/\s+/g, ' ').slice(0, 24);
+
+  const now = Date.now();
+  const isEdit = !!state.editingId;
+  if (isEdit) {
+    const m = db.materials.find(x => x.id === state.editingId);
+    if (!m) { toast('这条素材不见了'); return; }
+    m.title = finalTitle;
+    m.content = content;
+    m.category = state.editingCategory;
+    m.tags = state.editingTags.slice();
+    m.updatedAt = now;
+  } else {
+    db.materials.push(normalizeMaterial({
+      id: uid(),
+      title: finalTitle,
+      content,
+      category: state.editingCategory,
+      tags: state.editingTags.slice(),
+      favorite: false,
+      createdAt: now,
+      updatedAt: now
+    }));
+  }
+  if (!saveDB()) return;
+
+  const id = state.editingId || db.materials[db.materials.length - 1].id;
+  closeEditor();
+  renderAll();
+  openDetail(id);
+  toast(isEdit ? '已保存' : '已添加');
+}
+
+/* ---------------------------- 9. AI 能力 --------------------------------- */
+
+async function aiChat(system, user, opts) {
+  opts = opts || {};
+  const { baseUrl, apiKey, model } = db.settings.ai;
+  if (!apiKey || !apiKey.trim()) {
+    throw new Error('还没填 API Key。到「设置 → 云 AI」里填一个，或者手动写也行。');
+  }
+  const url = String(baseUrl || 'https://api.deepseek.com/v1').trim().replace(/\/+$/, '') + '/chat/completions';
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AI_TIMEOUT);
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey.trim()
+      },
+      body: JSON.stringify({
+        model: (model || 'deepseek-flash').trim(),
+        temperature: opts.temperature == null ? 0.8 : opts.temperature,
+        // 推理模型的思考过程也算 token，给太少会出现"想完了但答案被截断"
+        max_tokens: opts.maxTokens || 3000,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user }
+        ]
+      }),
+      signal: controller.signal
+    });
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') throw new Error('等了 ' + (AI_TIMEOUT / 1000) + ' 秒还没回来。推理模型比较慢，稍后再试一次。');
+    throw new Error('连不上接口：' + err.message + '（如果是本地文件打开的，可能被跨域拦了，试试用 http 打开）');
+  }
+  clearTimeout(timer);
+
+  if (!res.ok) {
+    let detail = '';
+    try { detail = (await res.text()).slice(0, 180); } catch (e) {}
+    throw new Error('接口返回 ' + res.status + (detail ? '：' + detail : ''));
+  }
+  const data = await res.json();
+  const msg = data?.choices?.[0]?.message || {};
+  const text = msg.content;
+  // 推理模型：思考完了才有 content。content 空但 reasoning 有内容，说明 token 被思考吃光了
+  if (!text && msg.reasoning_content) {
+    throw new Error('模型想太久把额度用完了，没输出答案。重试一次，或者把要它做的事说得更具体些。');
+  }
+  if (!text) throw new Error('接口没有返回内容');
+  return String(text).trim();
+}
+
+/* ---------- 联网搜索：DeepSeek Search API ----------
+   POST {base}/v1/tools/search
+   按请求次数计费（每千次 5 元），只有搜到结果才计费。 */
+
+async function webSearch(query, count) {
+  const { baseUrl, apiKey } = db.settings.ai;
+  if (!apiKey || !apiKey.trim()) {
+    throw new Error('还没填 API Key');
+  }
+  // baseUrl 可能写成 https://api.deepseek.com 或 .../v1，两种都兼容
+  const root = String(baseUrl || 'https://api.deepseek.com/v1').trim()
+    .replace(/\/+$/, '').replace(/\/v1$/, '');
+  const url = root + '/v1/tools/search';
+
+  // 接口限制 query 为 1~128 个字符
+  const q = String(query || '').trim().slice(0, 128);
+  if (!q) throw new Error('搜索词是空的');
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey.trim()
+      },
+      // need_content 关掉：摘要（600~800字）够模型用了，正文动辄几万字会把上下文撑爆
+      body: JSON.stringify({ query: q, count: count || 8, need_content: false }),
+      signal: controller.signal
+    });
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') throw new Error('搜索超时');
+    throw new Error('搜索失败：' + err.message);
+  }
+  clearTimeout(timer);
+
+  if (!res.ok) {
+    let detail = '';
+    try { detail = (await res.text()).slice(0, 120); } catch (e) {}
+    throw new Error('搜索接口返回 ' + res.status + (detail ? '：' + detail : ''));
+  }
+  const data = await res.json();
+  return Array.isArray(data?.results) ? data.results : [];
+}
+
+function domainOf(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); }
+  catch (e) { return '来源'; }
+}
+
+// AI 有时会把 JSON 包在 ```json 里或者加一段说明，这里宽松提取
+function parseLooseJSON(text) {
+  const cleaned = String(text).replace(/```json/gi, '').replace(/```/g, '').trim();
+  const m = cleaned.match(/[\[{][\s\S]*[\]}]/);
+  if (!m) throw new Error('AI 返回的内容解析不了');
+  return JSON.parse(m[0]);
+}
+
+function setAIStatus(msg, isErr) {
+  const el = $('#aiStatus');
+  el.textContent = msg || '';
+  el.className = 'ai-status' + (isErr ? ' err' : '');
+}
+
+function aiBusy(btn, busy, textWhenBusy) {
+  if (busy) {
+    btn.dataset.oldText = btn.textContent;
+    btn.textContent = textWhenBusy || '生成中…';
+    btn.disabled = true;
+  } else {
+    btn.textContent = btn.dataset.oldText || btn.textContent;
+    btn.disabled = false;
+  }
+}
+
+// AI 改写正文前先存一份快照，toast 里给 5 秒撤销窗口
+function applyContentWithUndo(newText) {
+  const ta = $('#fContent');
+  const before = ta.value;
+  ta.value = newText;
+  updateCounters();
+  state.undoSnapshot = before;
+  toast('已写入正文', '撤销', () => {
+    ta.value = before;
+    updateCounters();
+    toast('已恢复原文');
+  });
+}
+
+async function runPolish() {
+  const btn = $('#aiPolish');
+  const content = $('#fContent').value.trim();
+  if (content.length < 8) { setAIStatus('先写几句，AI 才有东西可润色。', true); return; }
+  aiBusy(btn, true, '润色中…');
+  setAIStatus('正在重写…');
+  try {
+    const out = await aiChat(
+      '你是高中语文老师的作文素材编辑。你只做一件事：把学生给的素材整理得更准确、更有画面感、更适合直接引用。'
+      + '要求：保留原意和事实，不加编造；语言凝练；不要写解释、不要加标题、不要用 Markdown 符号，直接输出整理后的正文。',
+      '请整理下面这条作文素材：\n\n' + content,
+      { temperature: 0.7 }
+    );
+    applyContentWithUndo(out);
+    setAIStatus('');
+  } catch (err) {
+    setAIStatus(err.message, true);
+  } finally {
+    aiBusy(btn, false);
+  }
+}
+
+async function runSuggestTags() {
+  const btn = $('#aiTags');
+  const title = $('#fTitle').value.trim();
+  const content = $('#fContent').value.trim();
+  if (!title && !content) { setAIStatus('先写点内容，再让 AI 提标签。', true); return; }
+  aiBusy(btn, true, '分析中…');
+  setAIStatus('正在提炼主题…');
+  try {
+    const out = await aiChat(
+      '你是作文素材库的标签助手。根据素材内容提炼 3 到 5 个主题标签，每个 2 到 4 个汉字，'
+      + '比如「坚持」「故乡」「科技伦理」。只输出一个 JSON 数组，例如 ["坚持","成长"]，不要任何其他文字。',
+      '标题：' + (title || '（无）') + '\n正文：' + content,
+      { temperature: 0.5 }
+    );
+    const arr = parseLooseJSON(out);
+    if (!Array.isArray(arr)) throw new Error('AI 没按格式给出标签');
+    let added = 0;
+    arr.forEach(t => {
+      const clean = String(t).trim();
+      if (clean && !state.editingTags.includes(clean) && state.editingTags.length < 8) {
+        state.editingTags.push(clean);
+        added++;
+      }
+    });
+    renderEditorTags();
+    renderTagSuggest();
+    setAIStatus(added ? '加了 ' + added + ' 个标签，不要的点掉就行。' : '没有新标签可加。');
+  } catch (err) {
+    setAIStatus(err.message, true);
+  } finally {
+    aiBusy(btn, false);
+  }
+}
+
+async function runDraft() {
+  const btn = $('#aiDraft');
+  const topic = $('#fTitle').value.trim();
+  if (!topic) { setAIStatus('先在标题栏写个主题词，比如「苏轼的豁达」。', true); return; }
+  aiBusy(btn, true, '写作中…');
+  setAIStatus('正在按主题生成…');
+  try {
+    const out = await aiChat(
+      '你是作文素材库的撰稿人。根据用户给的主题，写一条可以直接收进素材本的条目。'
+      + '要求：事实准确，不编造具体引文；正文 100 到 220 字，语言凝练有细节；不要用 Markdown。'
+      + '只输出一个 JSON 对象：{"title":"简短标题","content":"正文"}',
+      '主题：' + topic,
+      { temperature: 0.85 }
+    );
+    const obj = parseLooseJSON(out);
+    if (!obj || !obj.content) throw new Error('AI 没按格式返回素材');
+    applyContentWithUndo(String(obj.content).trim());
+    if (obj.title) {
+      $('#fTitle').value = String(obj.title).trim().slice(0, 120);
+      updateCounters();
+    }
+    setAIStatus('生成完了，觉得能用就保存，不行就撤销再来一次。');
+  } catch (err) {
+    setAIStatus(err.message, true);
+  } finally {
+    aiBusy(btn, false);
+  }
+}
+
+/* ---------- AI 找素材：按一句提示词批量产出候选，挑中的才入库 ---------- */
+
+function openAIFind() {
+  // 默认跟着当前筛选的分类走，省一次点击
+  state.aiCategory = state.category !== '全部' ? state.category : DEFAULT_CAT;
+  state.aiResults = [];
+  $('#aiPrompt').value = '';
+  setFindStatus('');
+  renderAICats();
+  renderAIResults();
+  const sheet = $('#aiSheet');
+  sheet.classList.add('open');
+  sheet.querySelector('.sheet-body').scrollTop = 0;
+  syncBodyLock();
+}
+
+function closeAIFind() {
+  $('#aiSheet').classList.remove('open');
+  syncBodyLock();
+}
+
+function renderAICats() {
+  $('#aiCat').innerHTML = CATEGORIES.map(c => {
+    const on = state.aiCategory === c;
+    return '<button class="chip' + (on ? ' on' : '') + '" data-aicat="' + escapeHtml(c) + '">'
+      + '<i class="dot" style="background:' + (CAT_COLOR[c] || '#999') + '"></i>'
+      + escapeHtml(c) + '</button>';
+  }).join('');
+}
+
+function setFindStatus(msg, isErr) {
+  const el = $('#aiFindStatus');
+  el.textContent = msg || '';
+  el.className = 'ai-status' + (isErr ? ' err' : '');
+}
+
+function renderAIResults() {
+  const host = $('#aiResults');
+  if (!state.aiResults.length) { host.innerHTML = ''; return; }
+  host.innerHTML = state.aiResults.map((r, i) => ''
+    + '<article class="ai-card">'
+    +   '<h3>' + escapeHtml(r.title) + '</h3>'
+    +   '<div class="body">' + escapeHtml(r.content) + '</div>'
+    +   (r.tags.length
+        ? '<div class="tags">' + r.tags.map(t => '<span class="mini-tag">' + escapeHtml(t) + '</span>').join('') + '</div>'
+        : '')
+    +   (r.source
+        ? '<a class="src" href="' + escapeHtml(r.source.url) + '" target="_blank" rel="noopener noreferrer">'
+          + '<svg viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M19 14v5a1 1 0 01-1 1H6a1 1 0 01-1-1V6a1 1 0 011-1h5"/></svg>'
+          + escapeHtml(r.source.siteName || domainOf(r.source.url)) + '</a>'
+        : '<span class="src none">模型生成 · 无来源可查</span>')
+    +   '<button class="save' + (r.saved ? ' done' : '') + '" data-aisave="' + i + '">'
+    +     (r.saved ? '已存进素材库' : '存进素材库')
+    +   '</button>'
+    + '</article>'
+  ).join('');
+}
+
+// 有搜索结果时用这套 prompt：只许从资料里提炼，不许自由发挥
+const SEARCH_SYSTEM =
+  '你是作文素材库的撰稿人。用户给你一个需求，以及一批刚从网上搜到的真实网页资料。\n'
+  + '请从资料里提炼作文素材，不要凭空发挥。\n\n'
+  + '硬性要求：\n'
+  + '1. 只输出一个 JSON 数组，不要任何解释文字，不要 Markdown 代码块。\n'
+  + '2. 数组里恰好 3 个对象，每个对象四个字段：title（不超过 20 字）、'
+  + 'content（100 到 220 字）、tags（2 到 4 个，每个 2 到 4 个汉字）、'
+  + 'source（你最主要依据的那条资料的编号，整数）。\n'
+  + '3. content 里的每一个事实都要能在对应资料里找到依据。资料没提到的年份、数字、人名、机构名，一律不写。\n'
+  + '4. 三条角度要拉开，不要三条都在讲同一件事。\n'
+  + '5. 语言凝练、有具体细节，像人写的。不要排比堆砌，不要空话套话。\n'
+  + '6. 涉及台湾、香港、澳门，必须写作「中国台湾」「中国香港」「中国澳门」。\n'
+  + '7. content 里不要写网址，也不要写「据某某报道」，程序会自动把来源附在后面。\n'
+  + '8. 如果资料内容太薄、撑不起一条素材，就少给几条，不要凑数。';
+
+// 没有搜索结果时的兜底 prompt：全靠模型知识，必须自我约束
+const KNOWLEDGE_SYSTEM =
+  '你是作文素材库的撰稿人，帮高中生按需求整理素材。\n\n'
+  + '硬性要求：\n'
+  + '1. 只输出一个 JSON 数组，不要任何解释文字，不要 Markdown 代码块。\n'
+  + '2. 数组里恰好 3 个对象，每个对象三个字段：title（不超过 20 字的标题）、'
+  + 'content（100 到 220 字的正文）、tags（2 到 4 个主题标签，每个 2 到 4 个汉字）。\n'
+  + '3. 你这次没有联网，看不到今天发生了什么。如果题目涉及近期新闻或时政，'
+  + '不要编造具体日期、机构、数字、当事人姓名；把内容写得概括一些。\n'
+  + '4. 拿不准出处的名言，不要写成「某某说过」。宁可换成你确定的内容。\n'
+  + '5. 语言凝练、有具体细节，像人写的。不要排比堆砌，不要空话套话。\n'
+  + '6. 三条之间角度要拉开，别三条都在讲同一件事。\n'
+  + '7. 涉及台湾、香港、澳门，必须写作「中国台湾」「中国香港」「中国澳门」。';
+
+async function runAIFind() {
+  const btn = $('#btnAIGo');
+  const prompt = $('#aiPrompt').value.trim();
+  if (prompt.length < 2) {
+    setFindStatus('先写清楚你要什么，哪怕就三个字。', true);
+    $('#aiPrompt').focus();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.dataset.oldText = btn.textContent;
+  btn.textContent = '正在搜索…';
+  $('#aiResults').innerHTML = '';
+  state.aiResults = [];
+
+  // 第一步：上网搜。搜不到不算失败，退回模型知识继续
+  let sources = [];
+  let searchErr = '';
+  if (db.settings.ai.apiKey && db.settings.ai.apiKey.trim()) {
+    setFindStatus('正在网上搜真实网页…');
+    try {
+      sources = await webSearch(prompt, 8);
+    } catch (err) {
+      searchErr = err.message;
+    }
+  } else {
+    searchErr = '没填 API Key';
+  }
+
+  try {
+    if (sources.length) {
+      // 有料：把检索结果喂给模型提炼，每条素材都能追到出处
+      setFindStatus('搜到 ' + sources.length + ' 个网页，正在提炼成素材…');
+
+      const corpus = sources.map((r, i) => {
+        const meta = [r.title, r.site_name, String(r.date || '').slice(0, 10)]
+          .filter(Boolean).join(' | ');
+        return '[' + i + '] ' + meta + '\n' + (r.summary || r.snippet || '（无摘要）');
+      }).join('\n\n');
+
+      const out = await aiChat(
+        SEARCH_SYSTEM,
+        '我的需求：' + prompt + '\n归类：' + state.aiCategory
+          + '\n\n以下是搜到的网页资料（编号供 source 字段引用）：\n\n' + corpus,
+        { temperature: 0.7, maxTokens: 4000 }
+      );
+
+      const arr = parseLooseJSON(out);
+      if (!Array.isArray(arr) || !arr.length) throw new Error('模型没按格式返回，重试一次试试');
+
+      state.aiResults = arr.slice(0, 3).map(x => {
+        const idx = Number(x.source);
+        const src = Number.isInteger(idx) && sources[idx] ? sources[idx] : null;
+        return {
+          title: String(x.title || '').trim().slice(0, 120) || '（未给标题）',
+          content: String(x.content || '').trim(),
+          tags: Array.isArray(x.tags) ? x.tags.map(t => String(t).trim()).filter(Boolean).slice(0, 4) : [],
+          source: src ? {
+            url: String(src.url || ''),
+            title: String(src.title || '').slice(0, 200),
+            siteName: String(src.site_name || '').slice(0, 60),
+            date: String(src.date || '').slice(0, 40)
+          } : null,
+          saved: false
+        };
+      }).filter(r => r.content && r.source); // 没有来源的不收，宁可少给
+
+      if (!state.aiResults.length) throw new Error('模型给的素材对不上任何来源，重试一次');
+
+      renderAIResults();
+      setFindStatus('搜了 ' + sources.length + ' 个网页，提炼出 ' + state.aiResults.length + ' 条。点来源能直接核对原文。');
+    } else {
+      // 没料：退回模型知识。原因要留到最后的提示里，否则用户不知道这次其实没搜到
+      btn.textContent = '生成中…';
+      const why = searchErr ? '搜索没成功（' + searchErr + '），' : '没搜到相关网页，';
+      setFindStatus(why + '改用模型记忆生成…');
+
+      const out = await aiChat(
+        KNOWLEDGE_SYSTEM,
+        '我要的素材：' + prompt + '\n\n归类：' + state.aiCategory,
+        { temperature: 0.9, maxTokens: 4000 }
+      );
+
+      const arr = parseLooseJSON(out);
+      if (!Array.isArray(arr) || !arr.length) throw new Error('模型没按格式返回，重试一次试试');
+
+      state.aiResults = arr.slice(0, 3).map(x => ({
+        title: String(x.title || '').trim().slice(0, 120) || '（未给标题）',
+        content: String(x.content || '').trim(),
+        tags: Array.isArray(x.tags) ? x.tags.map(t => String(t).trim()).filter(Boolean).slice(0, 4) : [],
+        source: null,
+        saved: false
+      })).filter(r => r.content);
+
+      if (!state.aiResults.length) throw new Error('模型返回的内容是空的');
+
+      renderAIResults();
+      setFindStatus(why + '这 ' + state.aiResults.length + ' 条是模型凭记忆写的，没有来源可查，用之前自己核一遍。');
+    }
+  } catch (err) {
+    setFindStatus(err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = btn.dataset.oldText || '去网上找素材';
+  }
+}
+
+// 只有用户点「存进素材库」才写进本地数据，AI 产出一律先当草稿
+function saveAIResult(index) {
+  const r = state.aiResults[index];
+  if (!r || r.saved) return;
+  const now = Date.now();
+  db.materials.push(normalizeMaterial({
+    id: uid(),
+    title: r.title,
+    content: r.content,
+    category: state.aiCategory,
+    tags: r.tags.slice(),
+    favorite: false,
+    source: r.source ? Object.assign({}, r.source) : null,
+    createdAt: now,
+    updatedAt: now
+  }));
+  if (!saveDB()) return;
+  r.saved = true;
+  renderAIResults();
+  renderAll();
+  toast('已存进「' + state.aiCategory + '」');
+}
+
+async function testAI() {
+  const btn = $('#btnTestAI');
+  const old = btn.textContent;
+  btn.textContent = '测试中';
+  btn.disabled = true;
+  try {
+    const out = await aiChat('你是一个连接测试助手，只回复两个字。', '请回复：可用', { temperature: 0 });
+    toast('连接正常，模型回复：' + out.slice(0, 20));
+  } catch (err) {
+    toast(err.message.slice(0, 80));
+  } finally {
+    btn.textContent = old;
+    btn.disabled = false;
+  }
+}
+
+/* ---------------------------- 10. 导入导出 ------------------------------- */
+
+function exportData() {
+  const payload = JSON.stringify(db, null, 2);
+  const blob = new Blob([payload], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '素材本-' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast('已导出 ' + db.materials.length + ' 条素材');
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = async () => {
+    let incoming;
+    try {
+      const parsed = JSON.parse(String(reader.result));
+      incoming = Array.isArray(parsed) ? parsed : parsed.materials;
+      if (!Array.isArray(incoming)) throw new Error('结构不对');
+    } catch (err) {
+      toast('这个文件不是有效的素材备份');
+      return;
+    }
+    const ok = await confirmDialog(
+      '导入 ' + incoming.length + ' 条素材？',
+      '相同 id 的会被覆盖，其余追加进来。现有素材不会丢。',
+      '导入', false
+    );
+    if (!ok) return;
+
+    const map = new Map(db.materials.map(m => [m.id, m]));
+    let added = 0, updated = 0;
+    incoming.forEach(raw => {
+      const m = normalizeMaterial(raw);
+      if (map.has(m.id)) { map.set(m.id, m); updated++; }
+      else { map.set(m.id, m); added++; }
+    });
+    db.materials = Array.from(map.values());
+    saveDB();
+    renderAll();
+    toast('导入完成：新增 ' + added + ' 条，覆盖 ' + updated + ' 条');
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+/* ---------------------------- 11. 事件绑定 ------------------------------- */
+
+function bindEvents() {
+  // ---- 顶部随机推荐 ----
+  $('#btnRandom').onclick = () => {
+    const pool = getFiltered();
+    if (!pool.length) { toast('当前没有可推荐的素材'); return; }
+    // 只有一条时别装作在随机
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    if (pool.length === 1) toast('就这一条，给你打开');
+    else toast('随手翻到一条');
+    openDetail(pick.id);
+  };
+
+  // ---- AI 找素材 ----
+  $('#btnAIFind').onclick = openAIFind;
+  $('#btnAIGo').onclick = runAIFind;
+
+  $('#aiSheet').addEventListener('click', e => {
+    const btn = e.target.closest('[data-act]');
+    if (btn && btn.dataset.act === 'close-ai') { closeAIFind(); return; }
+
+    const catBtn = e.target.closest('[data-aicat]');
+    if (catBtn) {
+      state.aiCategory = catBtn.dataset.aicat;
+      renderAICats();
+      return;
+    }
+
+    const saveBtn = e.target.closest('[data-aisave]');
+    if (saveBtn) { saveAIResult(Number(saveBtn.dataset.aisave)); return; }
+  });
+
+  // ---- 底部 Tab ----
+  $('#tabbar').addEventListener('click', e => {
+    const btn = e.target.closest('[data-tab]');
+    if (!btn) return;
+    const tab = btn.dataset.tab;
+    if (tab === 'settings') {
+      state.tab = 'settings';
+      renderAll();
+      $('#settingsSheet').classList.add('open');
+      syncBodyLock();
+      return;
+    }
+    // 从设置返回时把 settings sheet 关掉
+    $('#settingsSheet').classList.remove('open');
+    state.tab = tab;
+    renderAll();
+    syncBodyLock();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ---- 搜索（防抖 150ms，避免每敲一个字就重绘整个列表） ----
+  let searchTimer = null;
+  $('#searchInput').addEventListener('input', e => {
+    const v = e.target.value;
+    $('#btnClearSearch').hidden = !v;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      state.keyword = v;
+      renderFilterBar();
+      renderList();
+    }, 150);
+  });
+  $('#btnClearSearch').onclick = () => {
+    $('#searchInput').value = '';
+    $('#btnClearSearch').hidden = true;
+    state.keyword = '';
+    renderFilterBar();
+    renderList();
+    $('#searchInput').focus();
+  };
+
+  // ---- 分类 chip ----
+  $('#catRow').addEventListener('click', e => {
+    const btn = e.target.closest('[data-cat]');
+    if (!btn) return;
+    state.category = btn.dataset.cat;
+    renderCatRow();
+    renderFilterBar();
+    renderList();
+  });
+
+  // ---- 标签筛选面板 ----
+  $('#btnTagPanel').onclick = () => {
+    state.tagPanelOpen = !state.tagPanelOpen;
+    renderTopbar();
+    renderFilterBar();
+    renderTagPanel();
+  };
+  $('#tagPool').addEventListener('click', e => {
+    const btn = e.target.closest('[data-tag]');
+    if (!btn) return;
+    const t = btn.dataset.tag;
+    const i = state.tags.indexOf(t);
+    if (i >= 0) state.tags.splice(i, 1);
+    else state.tags.push(t);
+    renderTagPanel();
+    renderFilterBar();
+    renderList();
+  });
+
+  // ---- 列表点击（委托） ----
+  $('#list').addEventListener('click', e => {
+    const favBtn = e.target.closest('[data-fav]');
+    if (favBtn) {
+      e.stopPropagation();
+      toggleFavorite(favBtn.dataset.fav);
+      return;
+    }
+    const card = e.target.closest('[data-open]');
+    if (card) openDetail(card.dataset.open);
+  });
+
+  // ---- 新增 ----
+  $('#btnAdd').onclick = () => openEditor(null);
+
+  // ---- 详情页操作 ----
+  $('#detailSheet').addEventListener('click', async e => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const act = btn.dataset.act;
+    const id = state.viewingId;
+    const m = id ? db.materials.find(x => x.id === id) : null;
+
+    if (act === 'close-detail') { closeDetail(); return; }
+    if (act === 'fav-detail') { if (id) toggleFavorite(id); return; }
+    if (act === 'edit-detail') { if (id) { closeDetail(); openEditor(id); } return; }
+    if (act === 'delete-detail') {
+      if (!m) return;
+      const ok = await confirmDialog(
+        '删除这条素材？',
+        '「' + (m.title || m.content.slice(0, 20)) + '」删除后无法恢复。',
+        '删除', true
+      );
+      if (!ok) return;
+      db.materials = db.materials.filter(x => x.id !== id);
+      saveDB();
+      closeDetail();
+      renderAll();
+      toast('已删除');
+      return;
+    }
+  });
+
+  // ---- 编辑页操作 ----
+  $('#editorSheet').addEventListener('click', async e => {
+    const btn = e.target.closest('[data-act]');
+    if (btn) {
+      const act = btn.dataset.act;
+      if (act === 'cancel-edit') {
+        const hasInput = $('#fTitle').value.trim() || $('#fContent').value.trim();
+        if (hasInput) {
+          const ok = await confirmDialog('放弃这次编辑？', '刚写的内容不会保存。', '放弃', true);
+          if (!ok) return;
+        }
+        closeEditor();
+        return;
+      }
+      if (act === 'save-edit') { saveEditor(); return; }
+    }
+    const catBtn = e.target.closest('[data-ecat]');
+    if (catBtn) {
+      state.editingCategory = catBtn.dataset.ecat;
+      renderEditorCats();
+      return;
+    }
+    const delBtn = e.target.closest('[data-deltag]');
+    if (delBtn) {
+      state.editingTags.splice(Number(delBtn.dataset.deltag), 1);
+      renderEditorTags();
+      renderTagSuggest();
+      return;
+    }
+    const addBtn = e.target.closest('[data-addtag]');
+    if (addBtn) { addEditingTag(addBtn.dataset.addtag); return; }
+  });
+
+  // 标签输入：回车 / 逗号 成 chip
+  $('#fTagInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ',' || e.key === '，') {
+      e.preventDefault();
+      addEditingTag(e.target.value);
+      e.target.value = '';
+    }
+  });
+  // 失焦时也把残留内容收进去，避免用户忘了按回车
+  $('#fTagInput').addEventListener('blur', e => {
+    if (e.target.value.trim()) { addEditingTag(e.target.value); e.target.value = ''; }
+  });
+
+  $('#fTitle').addEventListener('input', updateCounters);
+  $('#fContent').addEventListener('input', updateCounters);
+
+  // ---- AI 按钮 ----
+  $('#aiPolish').onclick = runPolish;
+  $('#aiTags').onclick = runSuggestTags;
+  $('#aiDraft').onclick = runDraft;
+
+  // ---- 设置页 ----
+  $('#settingsSheet').addEventListener('click', e => {
+    const btn = e.target.closest('[data-act="close-settings"]');
+    if (!btn) return;
+    state.tab = 'library';
+    $('#settingsSheet').classList.remove('open');
+    renderAll();
+    syncBodyLock();
+  });
+
+  // 用 input 而不是 change：手机上不点别处不会触发 change，配置会悄悄丢
+  $('#setBase').addEventListener('input', e => {
+    db.settings.ai.baseUrl = e.target.value.trim() || 'https://api.openai.com/v1';
+    saveDB();
+  });
+  $('#setKey').addEventListener('input', e => {
+    db.settings.ai.apiKey = e.target.value.trim();
+    saveDB();
+  });
+  $('#setModel').addEventListener('input', e => {
+    db.settings.ai.model = e.target.value.trim() || 'gpt-4o-mini';
+    saveDB();
+  });
+
+  $('#btnTestAI').onclick = testAI;
+  $('#btnExport').onclick = exportData;
+  $('#btnImport').onclick = () => $('#importFile').click();
+  $('#importFile').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) importData(f);
+    e.target.value = ''; // 允许连续导入同一个文件
+  });
+  $('#btnWipe').onclick = async () => {
+    const ok = await confirmDialog(
+      '清空所有素材？',
+      '共 ' + db.materials.length + ' 条素材会被永久删除，导出的备份也会失效。这一步不可恢复。',
+      '全部清空', true
+    );
+    if (!ok) return;
+    const ok2 = await confirmDialog('真的确定？', '最后一次确认，删了就没了。', '我确定', true);
+    if (!ok2) return;
+    db = emptyDB();
+    db.settings.ai = { baseUrl: 'https://api.deepseek.com/v1', apiKey: '', model: 'deepseek-flash' };
+    saveDB();
+    renderAll();
+    fillSettings();
+    toast('已清空');
+  };
+
+  // ---- 顶部栏滚动阴影 ----
+  window.addEventListener('scroll', () => {
+    $('#topbar').classList.toggle('scrolled', window.scrollY > 4);
+  }, { passive: true });
+}
+
+function fillSettings() {
+  $('#setBase').value = db.settings.ai.baseUrl || '';
+  $('#setKey').value = db.settings.ai.apiKey || '';
+  $('#setModel').value = db.settings.ai.model || '';
+}
+
+/* ---------------------------- 12. 安装到主屏 / manifest ------------------ */
+
+function setupInstall() {
+  // 内联 manifest：单文件也能给出应用名和图标
+  try {
+    const iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">'
+      + '<rect width="512" height="512" rx="96" fill="#faf7f1"/>'
+      + '<rect x="128" y="96" width="256" height="320" rx="24" fill="#ffffff" stroke="#c14b32" stroke-width="14"/>'
+      + '<path d="M184 176h144M184 240h144M184 304h88" stroke="#c14b32" stroke-width="16" stroke-linecap="round"/>'
+      + '</svg>';
+    const iconUrl = 'data:image/svg+xml;base64,' + btoa(iconSvg);
+    const manifest = {
+      name: '素材本 · 作文素材积累',
+      short_name: '素材本',
+      description: '作文素材的收集、检索与收藏',
+      start_url: location.href.split('#')[0],
+      scope: location.href.replace(/[^/]*$/, ''),
+      display: 'standalone',
+      background_color: '#faf7f1',
+      theme_color: '#faf7f1',
+      icons: [{ src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any' }]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+    $('#appManifest').href = URL.createObjectURL(blob);
+  } catch (e) { /* 不支持就算了，不影响使用 */ }
+
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferred = e;
+    $('#btnInstall').textContent = '安装';
+  });
+  $('#btnInstall').onclick = async () => {
+    if (!deferred) {
+      toast('当前浏览器不支持一键安装，用菜单里的「添加到主屏幕」');
+      return;
+    }
+    deferred.prompt();
+    const choice = await deferred.userChoice;
+    if (choice.outcome === 'accepted') toast('已安装到主屏');
+    deferred = null;
+  };
+  // 已经是独立窗口打开，说明装过了
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    $('#installHint').textContent = '你已经从主屏打开了';
+    $('#btnInstall').style.display = 'none';
+  }
+}
+
+/* ---------------------------- 13. 启动 ---------------------------------- */
+
+function boot() {
+  bindEvents();
+  fillSettings();
+  setupInstall();
+  renderAll();
+
+  // 首次使用给一句引导，别让空本子太冷清
+  if (!db.materials.length && !localStorage.getItem(STORE_KEY)) {
+    saveDB();
+  }
+}
+
+boot();
+</script>
+</body>
+</html>
